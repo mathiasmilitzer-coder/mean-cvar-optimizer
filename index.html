@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preisanzeige aus Datei</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>📦 Preiskatalog anzeigen</h1>
+    <p>Bitte wählen Sie eine CSV- oder TXT-Datei (mit Komma oder Semikolon getrennt) zum Hochladen aus:</p>
+
+    <input type="file" id="priceFile" accept=".csv, .txt">
+    <div id="statusMessage" style="margin-top: 10px;"></div>
+
+    <table id="priceTable">
+        <thead>
+            <tr>
+                <th>Produktname</th>
+                <th>Artikelnummer</th>
+                <th>Preis (€)</th>
+            </tr>
+        </thead>
+        <tbody id="priceTableBody">
+            </tbody>
+    </table>
+
+    <script>
+        document.getElementById('priceFile').addEventListener('change', handleFileUpload);
+        const tableBody = document.getElementById('priceTableBody');
+        const statusDiv = document.getElementById('statusMessage');
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // FileReader wird verwendet, um den Inhalt der lokalen Datei zu lesen
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const content = e.target.result;
+                displayPrices(content);
+            };
+            
+            reader.onerror = function() {
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'Fehler beim Lesen der Datei.';
+            };
+
+            reader.readAsText(file);
+        }
+
+        function displayPrices(csvText) {
+            // Zeilenumbrüche für die Aufteilung in Zeilen
+            const lines = csvText.split(/\r\n|\n/);
+            tableBody.innerHTML = ''; // Vorherige Einträge löschen
+
+            let rowCount = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue; // Leere Zeilen überspringen
+
+                // Versuchen, das Trennzeichen automatisch zu erkennen (Komma oder Semikolon)
+                const separator = line.includes(';') ? ';' : ',';
+                
+                // Aufteilen der Zeile in Spalten. Wir erwarten Produktname, Artikelnummer, Preis.
+                const columns = line.split(separator).map(col => col.trim().replace(/"/g, '')); // Anführungszeichen entfernen
+
+                if (columns.length >= 3) {
+                    // Die ersten 3 Spalten verwenden
+                    const productName = columns[0];
+                    const itemNumber = columns[1];
+                    let price = columns[2].replace(',', '.'); // Komma als Dezimaltrennzeichen in Punkt umwandeln
+
+                    // Neue Tabellenzeile erstellen
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = productName;
+                    row.insertCell().textContent = itemNumber;
+                    
+                    // Preis formatieren und einfügen
+                    const priceCell = row.insertCell();
+                    priceCell.textContent = parseFloat(price).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+                    
+                    rowCount++;
+                }
+            }
+
+            if (rowCount > 0) {
+                statusDiv.className = 'success';
+                statusDiv.textContent = `Erfolgreich ${rowCount} Produkte geladen.`;
+            } else {
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'Es konnten keine gültigen Daten in der Datei gefunden werden. Bitte Format überprüfen.';
+            }
+        }
+    </script>
+
+</body>
+</html>
