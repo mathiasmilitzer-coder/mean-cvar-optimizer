@@ -96,6 +96,15 @@ def optimiere_portfolio(mittelwerte, kovarianzmatrix, R_ziel_tag, tage, simulati
     )\
     return optimale_ergebnisse\
 \
+# --- Dieser Block wird sofort beim Import durch Gunicorn ausgeführt ---
+
+# Laden Sie die simulierten Kurse
+KURSE = lade_historische_kurse() 
+
+# Berechnen Sie die historischen Parameter (Mittelwerte, Kovarianz)
+RENDITEN, MITTELWERTE, KOVARIANZMATRIX, ASSET_NAMEN = berechne_historische_parameter(KURSE) 
+# -------------------------------------------------------------------
+
 # =========================================================================\
 # II. FLASK API-STRUKTUR (Der Webserver)\
 # =========================================================================\
