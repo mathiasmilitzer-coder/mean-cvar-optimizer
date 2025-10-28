@@ -108,12 +108,15 @@ def optimiere_portfolio(ziel_rendite, renditen, mittelwerte, kovarianzmatrix, ri
     """
     num_assets = len(mittelwerte)
     
-    # 1. Nebenbedingungen (Constraints)
-    # C1: Summe der Gewichte muss 1 ergeben (Vollständige Investition)
-    constraints = ({'type': 'eq', 'fun': lambda gewichte: np.sum(gewichte) - 1})
-    
-    # C2: Die erwartete Portfoliorendite muss mindestens der Zielrendite entsprechen
-    constraints += ({'type': 'ineq', 'fun': lambda gewichte: portfolio_return(gewichte, mittelwerte) - ziel_rendite})
+    # 1. Nebenbedingungen (Constraints) - KORRIGIERTER BLOCK
+    # Wir definieren constraints als Liste von Dictionaries
+    constraints = [
+        # C1: Summe der Gewichte muss 1 ergeben (Vollständige Investition)
+        {'type': 'eq', 'fun': lambda gewichte: np.sum(gewichte) - 1},
+        
+        # C2: Die erwartete Portfoliorendite muss mindestens der Zielrendite entsprechen
+        {'type': 'ineq', 'fun': lambda gewichte: portfolio_return(gewichte, mittelwerte) - ziel_rendite}
+    ]
     
     # 2. Bindung (Bounds): Gewichte müssen zwischen 0 und 1 liegen (kein Leerverkauf)
     bounds = tuple((0, 1) for asset in range(num_assets))
@@ -128,7 +131,7 @@ def optimiere_portfolio(ziel_rendite, renditen, mittelwerte, kovarianzmatrix, ri
         initial_gewichte, 
         method='SLSQP', 
         bounds=bounds, 
-        constraints=constraints
+        constraints=constraints # Übergabe der korrigierten Liste
     )
     
     # Prüfe auf Erfolg
