@@ -1,109 +1,77 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preisanzeige aus Datei</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .success { color: green; font-weight: bold; }
-        .error { color: red; font-weight: bold; }
-    </style>
-</head>
-<body>
+\documentclass[11pt, a4paper]{article}
 
-    <h1>📦 Preiskatalog anzeigen</h1>
-    <p>Bitte wählen Sie eine CSV- oder TXT-Datei (mit Komma oder Semikolon getrennt) zum Hochladen aus:</p>
+% --- UNIVERSAL PREAMBLE BLOCK ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{fontspec}
 
-    <input type="file" id="priceFile" accept=".csv, .txt">
-    <div id="statusMessage" style="margin-top: 10px;"></div>
+% Sprachunterstützung für Deutsch (ngerman) und Englisch
+\usepackage[ngerman, bidi=basic, provide=*]{babel}
 
-    <table id="priceTable">
-        <thead>
-            <tr>
-                <th>Produktname</th>
-                <th>Artikelnummer</th>
-                <th>Preis (€)</th>
-            </tr>
-        </thead>
-        <tbody id="priceTableBody">
-            </tbody>
-    </table>
+\babelprovide[import, onchar=ids fonts]{ngerman}
+\babelprovide[import, onchar=ids fonts]{english}
 
-    <script>
-        document.getElementById('priceFile').addEventListener('change', handleFileUpload);
-        const tableBody = document.getElementById('priceTableBody');
-        const statusDiv = document.getElementById('statusMessage');
+% Setzt die Standardschriftart auf Noto Sans
+\babelfont{rm}{Noto Sans}
 
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+% Pakete für Tabellen und Listen
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
 
-            // FileReader wird verwendet, um den Inhalt der lokalen Datei zu lesen
-            const reader = new FileReader();
+\title{\textbf{Goldpreis-Analyse und Marktprognose 2024/2025}}
+\author{Datenanalyse-Team}
+\date{\today}
 
-            reader.onload = function(e) {
-                const content = e.target.result;
-                displayPrices(content);
-            };
-            
-            reader.onerror = function() {
-                statusDiv.className = 'error';
-                statusDiv.textContent = 'Fehler beim Lesen der Datei.';
-            };
+\begin{document}
 
-            reader.readAsText(file);
-        }
+\maketitle
 
-        function displayPrices(csvText) {
-            // Zeilenumbrüche für die Aufteilung in Zeilen
-            const lines = csvText.split(/\r\n|\n/);
-            tableBody.innerHTML = ''; // Vorherige Einträge löschen
+\begin{abstract}
+Diese Analyse untersucht die jüngsten Entwicklungen des Goldpreises und bewertet die wichtigsten Einflussfaktoren, um eine fundierte Prognose für die Jahre 2024 und 2025 zu erstellen. Gold behält weiterhin seine Rolle als primärer sicherer Hafen in Zeiten geopolitischer und wirtschaftlicher Unsicherheit bei.
+\end{abstract}
 
-            let rowCount = 0;
+\section{Aktueller Marktüberblick}
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue; // Leere Zeilen überspringen
+Der Goldpreis hat in den letzten Quartalen signifikante Aufwärtsdynamik gezeigt. Das Edelmetall profitiert von einer lockeren Geldpolitik in einigen Regionen, starken Käufen durch Zentralbanken und anhaltenden geopolitischen Spannungen.
 
-                // Versuchen, das Trennzeichen automatisch zu erkennen (Komma oder Semikolon)
-                const separator = line.includes(';') ? ';' : ',';
-                
-                // Aufteilen der Zeile in Spalten. Wir erwarten Produktname, Artikelnummer, Preis.
-                const columns = line.split(separator).map(col => col.trim().replace(/"/g, '')); // Anführungszeichen entfernen
+\subsection{Preisstruktur (Stand Oktober 2024)}
 
-                if (columns.length >= 3) {
-                    // Die ersten 3 Spalten verwenden
-                    const productName = columns[0];
-                    const itemNumber = columns[1];
-                    let price = columns[2].replace(',', '.'); // Komma als Dezimaltrennzeichen in Punkt umwandeln
+Die nachfolgende Tabelle zeigt die ungefähren Marktwerte für gängige Goldgewichtseinheiten in Euro (EUR).
 
-                    // Neue Tabellenzeile erstellen
-                    const row = tableBody.insertRow();
-                    row.insertCell().textContent = productName;
-                    row.insertCell().textContent = itemNumber;
-                    
-                    // Preis formatieren und einfügen
-                    const priceCell = row.insertCell();
-                    priceCell.textContent = parseFloat(price).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-                    
-                    rowCount++;
-                }
-            }
+\begin{table}[htbp]
+    \centering
+    \caption{Marktwerte des Goldpreises}
+    \label{tab:goldwerte}
+    \begin{tabular}{l c c}
+        \toprule
+        \textbf{Einheit} & \textbf{Ungefährer Preis (EUR)} & \textbf{Veränderung (3 Monate)} \\
+        \midrule
+        1 Unze (oz) & 2.150 EUR & +4.5\% \\
+        1 Gramm (g) & 69 EUR & +3.2\% \\
+        1 Kilogramm (kg) & 69.000 EUR & +3.2\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-            if (rowCount > 0) {
-                statusDiv.className = 'success';
-                statusDiv.textContent = `Erfolgreich ${rowCount} Produkte geladen.`;
-            } else {
-                statusDiv.className = 'error';
-                statusDiv.textContent = 'Es konnten keine gültigen Daten in der Datei gefunden werden. Bitte Format überprüfen.';
-            }
-        }
-    </script>
+\section{Wichtige Einflussfaktoren}
 
-</body>
-</html>
+Die zukünftige Preisentwicklung des Goldes wird hauptsächlich von den folgenden makroökonomischen und geopolitischen Variablen bestimmt:
+
+\begin{itemize}
+    \item \textbf{Zinssätze und US-Dollar:} Ein Abflachen oder Senken der Leitzinsen macht Gold attraktiver, da es keine Zinsen abwirft. Ein schwächerer US-Dollar verbilligt Gold für internationale Käufer.
+    \item \textbf{Inflation:} Gold wird historisch als Absicherung gegen Inflation betrachtet. Hohe Inflationserwartungen treiben die Nachfrage.
+    \item \textbf{Geopolitische Risiken:} Konflikte, Handelsstreitigkeiten und politische Instabilität erhöhen die Nachfrage nach sicheren Anlagen wie Gold.
+    \item \textbf{Zentralbankkäufe:} Die fortgesetzte Akkumulation von Gold durch große Zentralbanken (z.B. China, Indien) bietet eine starke fundamentale Unterstützung.
+\end{itemize}
+
+\section{Marktprognose 2025}
+
+Angesichts des Zusammenspiels von wirtschaftlicher Unsicherheit und geopolitischen Risiken bleibt die Prognose für den Goldpreis optimistisch.
+
+Experten erwarten, dass der Goldpreis im Jahr 2025 in einer Spanne zwischen 2.200 EUR und 2.500 EUR pro Unze gehandelt wird. Ein Überschreiten der 2.500-EUR-Marke ist möglich, falls die globalen Zinssenkungen früher oder aggressiver als erwartet erfolgen oder falls neue, signifikante geopolitische Krisen entstehen.
+
+\section{Schlussfolgerung}
+Gold bleibt ein essenzieller Bestandteil diversifizierter Portfolios. Die fundamentale Nachfrage durch Zentralbanken und die Rolle als Krisenwährung untermauern weiterhin eine positive langfristige Entwicklung.
+
+\end{document}
+
